@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Minimal repo for reproducing issues with Coinbase Wallet SDK
 
-## Getting Started
+### Environment
+- OS: MacOS 13.4 (22F66) (Ventura)
+- Browser: Chrome 128.0.6613.84
+- Mobile OS: iOS 17.5.1
+- Coinbase Wallet Mobile App: v29.9
+- Built with: Node v20.10.0
+- Coinbase Wallet SDK: v4.0.4
+- Next.js v14.1.0
 
-First, run the development server:
+### Description
+Due to the nature of our product, in some instances, I have to connect wallets temporarily outside of Wagmi, using wallet RPC providers, such as what is returned by the `makeWeb3Provider` method of the `CoinbaseWalletSDK`.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The code in this repo is the base hooks handling wallet connections over EIP1193 providers.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+There are 2, easily reproducible issues & connected issues when connecting to a wallet hosted in the Coinbase Wallet mobile app, without having the browser extension installed.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`wallet_switchEthereumChain` calls sometimes get simply ignored, but they throw now errors - I basically call `eth_chainId` right after the `wallet_switchEthereumChain` call, and the chainId is still the same as before the call. 
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Also, after this happens, and I disconnect and try to connect again, the browser popup is never closed and the connection is never established.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### Steps to reproduce
+1. Disable the Coinbase Wallet browser extension if it's installed.
+2. Click `Connect Wallet`
+3. Connect with a wallet hosted in the Coinbase Wallet mobile app, by reading the QR code.
+4. Start switching chains by clicking the buttons in the UI.
+5. After 3-10 clicks, you'll see one of the calls failing silently, the rpc method resolving successfully with `null`, but not actually switching chains.
+6. If you keep switching chains, you'll likely see the call sometimes failing and sometimes succeeding (you can see the chainId in the UI and the errors in the console, or if in next dev mode, on the UI as toasts).
+7. After one of the `wallet_switchEthereumChain` calls fails, click "Disconnect Wallet" (this calls the `disconnect` method of the provider).
+8. After this, click `Connect Wallet` again, and read the QR code again with the Coinbase Wallet app on your phone. 
+9. You'll see that the connection popup never closes, even after accepting the connection on your phone, and the connection is never established.
