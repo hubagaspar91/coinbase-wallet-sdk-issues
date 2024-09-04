@@ -14,7 +14,7 @@ Due to the nature of our product, in some instances, I have to connect wallets t
 
 The code in this repo is the base hooks handling wallet connections over EIP1193 providers.
 
-There are 2, easily reproducible issues & connected issues when connecting to a wallet hosted in the Coinbase Wallet mobile app, without having the browser extension installed.
+There are 2, easily reproducible & connected issues when connecting to a wallet hosted in the Coinbase Wallet mobile app, without having the browser extension installed.
 
 `wallet_switchEthereumChain` calls sometimes get simply ignored, but they throw now errors - I basically call `eth_chainId` right after the `wallet_switchEthereumChain` call, and the chainId is still the same as before the call. 
 
