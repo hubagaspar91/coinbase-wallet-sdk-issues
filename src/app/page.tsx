@@ -2,15 +2,10 @@
 
 import useCoinbaseWalletSignerProvider, {appChainIds} from "@/hooks/useCoinbaseWalletSignerProvider";
 import useSafeSignerAccount from "@/hooks/useSafeSignerAccount";
-import {useEffect} from "react";
 
 export default function Home() {
   const { provider } = useCoinbaseWalletSignerProvider();
   const { connect, disconnect, switchChain, addresses, chainId, getChainId } = useSafeSignerAccount();
-
-  useEffect(() => {
-    console.log('provider', provider);
-  }, [provider]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">

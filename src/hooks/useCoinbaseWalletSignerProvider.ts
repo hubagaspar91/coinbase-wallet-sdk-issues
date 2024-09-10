@@ -14,6 +14,7 @@ export default function useCoinbaseWalletSignerProvider(
   const [coinbaseWallet, setCoinbaseWallet] = useState<CoinbaseWalletSDK | null>(null);
 
   useEffect(() => {
+    console.log('setCoinbaseWallet');
     setCoinbaseWallet(
       new CoinbaseWalletSDK({
         appName: 'L1',
@@ -26,6 +27,8 @@ export default function useCoinbaseWalletSignerProvider(
   const provider = useMemo(() => {
     const provider = coinbaseWallet?.makeWeb3Provider(preference);
 
+    console.log('makeWeb3Provider', provider);
+
     if (!provider) {
       return provider;
     }
@@ -34,7 +37,6 @@ export default function useCoinbaseWalletSignerProvider(
       ...provider,
       request: async (args: RpcRequest) => {
         if (args.method === 'wallet_revokePermissions') {
-          console.log('calling disconnect...');
           await provider.disconnect();
           return null;
         }

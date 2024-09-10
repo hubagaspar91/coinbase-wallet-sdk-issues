@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { numberToHex } from 'viem';
 import {EIP1193Provider} from "@/types";
 
@@ -45,7 +45,11 @@ export default function useSafeSignerAccount() {
           },
         ],
       });
-    } catch (e) {}
+    } catch (e) {
+      console.log('error disconnecting', e);
+    }
+
+    console.log('disconnected');
 
     setAddresses([]);
     setChainId(undefined);
@@ -65,17 +69,6 @@ export default function useSafeSignerAccount() {
         delete events.accountsChanged;
       }
 
-      try {
-        await _provider.request({
-          method: 'wallet_revokePermissions',
-          params: [
-            {
-              eth_accounts: {},
-            },
-          ],
-        });
-      } catch (e) {}
-
       const addresses: string[] = await _provider.request({
         method: 'eth_requestAccounts',
         params: [],
@@ -87,6 +80,8 @@ export default function useSafeSignerAccount() {
       }
 
       const chainId = await getChainId(_provider);
+
+      console.log('connected with addresses and chainId', addresses, chainId);
 
       setProvider(_provider);
       setAddresses(addresses);
@@ -101,21 +96,25 @@ export default function useSafeSignerAccount() {
 
   const switchChain = useCallback(
     async (_chainId: number) => {
+      console.log('switching chain to', _chainId);
       if (!provider) {
         throw new Error('Provider not found');
       }
+
+      console.log('switching chain with', provider);
 
       const resp = await provider.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: numberToHex(_chainId) }],
       });
 
+      console.log('switch chain resp', resp);
+
       // checking if the switch actually occurred
       // getChainId also sets the chainId, so no need for an additional set
       const newChainId = await getChainId();
 
       if (newChainId !== _chainId) {
-        console.log('resp', resp);
         // with coinbase wallet connected through mobile, the switch chain request is sometimes simply ignored
         // no way to retry or fix, it seems, only refreshing the page works
         throw switchChainRequestIgnoredError;
@@ -123,14 +122,6 @@ export default function useSafeSignerAccount() {
     },
     [getChainId, provider],
   );
-
-  useEffect(() => {
-    // disconnect on teardown, ignore errors
-    return () => {
-      disconnect().catch(() => {});
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return {
     connect,
