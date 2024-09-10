@@ -1,6 +1,6 @@
 import { CoinbaseWalletSDK, Preference } from '@coinbase/wallet-sdk';
 import { useEffect, useMemo, useState } from 'react';
-import { EIP1193Provider, RpcRequest } from '@/types';
+import { EIP1193Provider } from '@/types';
 
 const defaultPreference: Preference = { options: 'eoaOnly' };
 
@@ -29,20 +29,7 @@ export default function useCoinbaseWalletSignerProvider(
 
     console.log('makeWeb3Provider', provider);
 
-    if (!provider) {
-      return provider;
-    }
-
-    return {
-      ...provider,
-      request: async (args: RpcRequest) => {
-        if (args.method === 'wallet_revokePermissions') {
-          await provider.disconnect();
-          return null;
-        }
-        return provider.request(args);
-      },
-    };
+    return provider;
   }, [coinbaseWallet, preference]);
 
   return { provider };

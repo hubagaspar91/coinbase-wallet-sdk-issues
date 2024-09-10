@@ -37,14 +37,7 @@ export default function useSafeSignerAccount() {
     }
 
     try {
-      await provider.request({
-        method: 'wallet_revokePermissions',
-        params: [
-          {
-            eth_accounts: {},
-          },
-        ],
-      });
+     await (provider as any).disconnect();
     } catch (e) {
       console.log('error disconnecting', e);
     }
